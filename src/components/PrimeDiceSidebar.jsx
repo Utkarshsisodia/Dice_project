@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const PrimeDiceSidebar = ({onBet}) => {
+const PrimeDiceSidebar = () => {
   const [activeTab, setActiveTab] = useState("Manual");
   const [isAdvanced, setIsAdvanced] = useState(false);
   const [winAction, setWinAction] = useState("reset");
@@ -267,7 +267,7 @@ const PrimeDiceSidebar = ({onBet}) => {
       )}
 
       <div className="mt-auto pt-6">
-        <button onClick={onBet} className="w-full bg-[#1fff20] hover:bg-[#42ff43] text-black font-black py-4 rounded transition-all shadow-[0_4px_0_0_#17b918] active:translate-y-[3px] active:shadow-none uppercase tracking-[0.15em] text-sm">
+        <button className="w-full bg-[#1fff20] hover:bg-[#42ff43] text-black font-black py-4 rounded transition-all shadow-[0_4px_0_0_#17b918] active:translate-y-[3px] active:shadow-none uppercase tracking-[0.15em] text-sm">
           {activeTab === "Manual"
             ? "Bet"
             : activeTab === "Auto"
