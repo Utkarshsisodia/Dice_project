@@ -1,4 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import DiceMarker from './DiceMarker';
+import { TransitionGroup, CSSTransition } from 'react-transition-group';
+
 
 const OppositeDualRangeSlider = ({ vals, setVals, lastRoll }) => {
   const minVal = vals[0];
@@ -6,6 +9,7 @@ const OppositeDualRangeSlider = ({ vals, setVals, lastRoll }) => {
   
   const trackRef = useRef(null);
   const audioCtxRef = useRef(null);
+  const diceRef = useRef(null);
   const [dragging, setDragging] = useState(null);
 
   const marks = [0, 25, 50, 75, 100];
@@ -88,6 +92,23 @@ const OppositeDualRangeSlider = ({ vals, setVals, lastRoll }) => {
   const isWin = lastRoll !== null && (lastRoll <= minVal || lastRoll >= maxVal);
   return (
     <div className="w-full relative mt-10 touch-none select-none">
+      {/* CSS For the Sober Fade Animation */}
+      <style>{`
+        .dice-fade-enter {
+          opacity: 0;
+        }
+        .dice-fade-enter-active {
+          opacity: 1;
+          transition: opacity 250ms ease-out;
+        }
+        .dice-fade-exit {
+          opacity: 1;
+        }
+        .dice-fade-exit-active {
+          opacity: 0;
+          transition: opacity 200ms ease-in;
+        }
+      `}</style>
       <div className="relative w-full h-[44px] bg-[#2f4553] rounded-full shadow-sm">
         <div className="absolute inset-y-0 left-[22px] right-[22px]">
           
@@ -118,19 +139,21 @@ const OppositeDualRangeSlider = ({ vals, setVals, lastRoll }) => {
               }}
             ></div>
 
-            {lastRoll !== null && (
-              <div 
-                className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-40 flex flex-col items-center pointer-events-none transition-all duration-300 ease-out animate-in zoom-in-50"
-                style={{ left: `${lastRoll}%` }}
-              >
-                {/* Number Bubble */}
-                <div className={`px-2 py-1 rounded-[4px] text-[13px] font-black shadow-lg ${isWin ? 'bg-[#00e701] text-[#0f212e]' : 'bg-[#e9113c] text-white'}`}>
-                  {lastRoll.toFixed(2)}
-                </div>
-                {/* Little triangle pointing to the line */}
-                <div className={`w-0 mb-14 h-0 border-l-[5px] border-r-[5px] border-t-[5px] border-transparent ${isWin ? 'border-t-[#00e701]' : 'border-t-[#e9113c]'}`}></div>
-              </div>
-            )}
+            <TransitionGroup component={null}>
+              {lastRoll !== null && (
+                <CSSTransition 
+                  key={lastRoll} 
+                  nodeRef={diceRef} 
+                  timeout={250} 
+                  classNames="dice-fade"
+                  unmountOnExit /* ADDED: This cleans up the DOM after fading out */
+                >
+                  <div ref={diceRef} className="absolute inset-0 pointer-events-none z-40">
+                    <DiceMarker lastRoll={lastRoll} isWin={isWin} />
+                  </div>
+                </CSSTransition>
+              )}
+            </TransitionGroup>
 
             {/* Left Thumb (Points Right) */}
             <div

@@ -1,8 +1,11 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import DiceMarker from './DiceMarker';
+import { TransitionGroup, CSSTransition } from 'react-transition-group';
 
 const MultiRangeSlider = ({ vals, setVals, lastRoll }) => {
   const trackRef = useRef(null);
   const audioCtxRef = useRef(null);
+  const diceRef = useRef(null);
   const [dragging, setDragging] = useState(null);
 
   const marks = [0, 25, 50, 75, 100];
@@ -46,7 +49,6 @@ const MultiRangeSlider = ({ vals, setVals, lastRoll }) => {
       let percent = Math.round(rawPercent / step) * step;
       percent = Math.max(MIN_LIMIT, Math.min(MAX_LIMIT, percent));
 
-      // Handle dragging logic for all 4 thumbs preventing overlaps
       let newVals = [...vals];
       if (dragging === 0) newVals[0] = Math.min(percent, newVals[1]);
       if (dragging === 1) newVals[1] = Math.max(newVals[0], Math.min(percent, newVals[2]));
@@ -58,7 +60,6 @@ const MultiRangeSlider = ({ vals, setVals, lastRoll }) => {
         playTickSound();
       }
     },
-    // FIXED Dependency Array
     [dragging, vals, setVals, step, playTickSound]
   );
 
@@ -87,6 +88,25 @@ const MultiRangeSlider = ({ vals, setVals, lastRoll }) => {
 
   return (
     <div className="w-full relative mt-10 touch-none select-none">
+      
+      {/* --- ADDED: The CSS required for the fade transitions --- */}
+      <style>{`
+        .dice-fade-enter {
+          opacity: 0;
+        }
+        .dice-fade-enter-active {
+          opacity: 1;
+          transition: opacity 250ms ease-out;
+        }
+        .dice-fade-exit {
+          opacity: 1;
+        }
+        .dice-fade-exit-active {
+          opacity: 0;
+          transition: opacity 200ms ease-in;
+        }
+      `}</style>
+
       <div className="relative w-full h-[44px] bg-[#2f4553] rounded-full shadow-sm">
         <div className="absolute inset-y-0 left-[22px] right-[22px]">
           
@@ -103,12 +123,10 @@ const MultiRangeSlider = ({ vals, setVals, lastRoll }) => {
             ))}
           </div>
 
-          <div ref={trackRef} className="absolute top-[18px] left-0 right-0 h-[8px] rounded-full">
+          <div ref={trackRef} className="absolute top-[18px] left-0 right-0 h-[8px] rounded-full relative">
             
-            {/* Red Base Line */}
             <div className="absolute inset-0 bg-[#e9113c] rounded-full shadow-sm"></div>
 
-            {/* Green Segment 1 */}
             <div
               className="absolute top-0 bottom-0 bg-[#00e701] shadow-sm"
               style={{
@@ -117,7 +135,6 @@ const MultiRangeSlider = ({ vals, setVals, lastRoll }) => {
               }}
             ></div>
 
-            {/* Green Segment 2 */}
             <div
               className="absolute top-0 bottom-0 bg-[#00e701] shadow-sm"
               style={{
@@ -126,25 +143,21 @@ const MultiRangeSlider = ({ vals, setVals, lastRoll }) => {
               }}
             ></div>
 
-            {lastRoll !== null && (
-              <div 
-                className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-40 flex flex-col items-center pointer-events-none transition-all duration-300 ease-out animate-in zoom-in-50"
-                style={{ left: `${lastRoll}%` }}
-              >
-                <div 
-                  className={`
-                    px-2.5 py-1.5 rounded-md text-[13px] font-black shadow-xl border-x border-t border-b-[3px] 
-                    ${isWin 
-                      ? 'bg-[#00e701] border-b-[#00b801] border-t-[#33ff34] border-x-[#00d001] text-[#0f212e]' 
-                      : 'bg-[#e9113c] border-b-[#b80020] border-t-[#ff4d6a] border-x-[#d00018] text-white'
-                    }
-                  `}
+            <TransitionGroup component={null}>
+              {lastRoll !== null && (
+                <CSSTransition 
+                  key={lastRoll} 
+                  nodeRef={diceRef} 
+                  timeout={250} 
+                  classNames="dice-fade"
+                  unmountOnExit /* ADDED: This cleans up the DOM after fading out */
                 >
-                  {lastRoll.toFixed(2)}
-                </div>
-                <div className={`w-0 h-0 mb-14 border-l-[6px] border-r-[6px] border-t-[6px] border-transparent ${isWin ? 'border-t-[#00b801]' : 'border-t-[#b80020]'}`}></div>
-              </div>
-            )}
+                  <div ref={diceRef} className="absolute inset-0 pointer-events-none z-40">
+                    <DiceMarker lastRoll={lastRoll} isWin={isWin} />
+                  </div>
+                </CSSTransition>
+              )}
+            </TransitionGroup>
 
             {/* Map over the 4 values to render thumbs dynamically */}
             {vals.map((val, index) => {

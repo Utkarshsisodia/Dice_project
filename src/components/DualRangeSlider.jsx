@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import DiceMarker from './DiceMarker';
+import { TransitionGroup, CSSTransition } from 'react-transition-group';
 
 const DualRangeSlider = ({ vals, setVals, lastRoll }) => {
   // Extract min and max from the vals prop passed down from App.jsx
@@ -7,6 +9,7 @@ const DualRangeSlider = ({ vals, setVals, lastRoll }) => {
   
   const trackRef = useRef(null);
   const audioCtxRef = useRef(null);
+  const diceRef = useRef(null);
   const [dragging, setDragging] = useState(null);
 
   const marks = [0, 25, 50, 75, 100];
@@ -71,7 +74,6 @@ const DualRangeSlider = ({ vals, setVals, lastRoll }) => {
         }
       }
     },
-    // FIXED: Updated dependency array to match the new props and extracted variables
     [dragging, minVal, maxVal, setVals, step, playTickSound]
   );
 
@@ -98,6 +100,24 @@ const DualRangeSlider = ({ vals, setVals, lastRoll }) => {
   return (
     <div className="w-full relative mt-10 touch-none select-none">
       
+      {/* CSS For the Sober Fade Animation */}
+      <style>{`
+        .dice-fade-enter {
+          opacity: 0;
+        }
+        .dice-fade-enter-active {
+          opacity: 1;
+          transition: opacity 250ms ease-out;
+        }
+        .dice-fade-exit {
+          opacity: 1;
+        }
+        .dice-fade-exit-active {
+          opacity: 0;
+          transition: opacity 200ms ease-in;
+        }
+      `}</style>
+
       {/* OUTER GREY PILL */}
       <div className="relative w-full h-[44px] bg-[#2f4553] rounded-full shadow-sm">
         
@@ -135,27 +155,23 @@ const DualRangeSlider = ({ vals, setVals, lastRoll }) => {
               }}
             ></div>
 
-            {lastRoll !== null && (
-              <div 
-                className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-40 flex flex-col items-center pointer-events-none transition-all duration-300 ease-out animate-in zoom-in-50"
-                style={{ left: `${lastRoll}%` }}
-              >
-                {/* 3D Dice Block */}
-                <div 
-                  className={`
-                    px-2.5 py-1.5 rounded-md text-[13px] font-black shadow-xl border-x border-t border-b-[3px] 
-                    ${isWin 
-                      ? 'bg-[#00e701] border-b-[#00b801] border-t-[#33ff34] border-x-[#00d001] text-[#0f212e]' 
-                      : 'bg-[#e9113c] border-b-[#b80020] border-t-[#ff4d6a] border-x-[#d00018] text-white'
-                    }
-                  `}
+            {/* --- NEW: FADE ANIMATION WRAPPER --- */}
+            <TransitionGroup component={null}>
+              {lastRoll !== null && (
+                <CSSTransition 
+                  key={lastRoll} 
+                  nodeRef={diceRef} 
+                  timeout={250} 
+                  classNames="dice-fade"
                 >
-                  {lastRoll.toFixed(2)}
-                </div>
-                {/* Anchor Triangle */}
-                <div className={`w-0 h-0 mb-14 border-l-[6px] border-r-[6px] border-t-[6px] border-transparent ${isWin ? 'border-t-[#00b801]' : 'border-t-[#b80020]'}`}></div>
-              </div>
-            )}
+                  {/* We attach the ref here so the animation library can find this exact div */}
+                  <div ref={diceRef} className="absolute inset-0 pointer-events-none z-40">
+                    <DiceMarker lastRoll={lastRoll} isWin={isWin} />
+                  </div>
+                </CSSTransition>
+              )}
+            </TransitionGroup>
+            {/* ----------------------------------- */}
 
             {/* Left Blue Thumb */}
             <div
