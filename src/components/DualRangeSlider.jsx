@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 
-const DualRangeSlider = ({ vals, setVals }) => {
+const DualRangeSlider = ({ vals, setVals, lastRoll }) => {
   // Extract min and max from the vals prop passed down from App.jsx
   const minVal = vals[0];
   const maxVal = vals[1];
@@ -93,6 +93,8 @@ const DualRangeSlider = ({ vals, setVals }) => {
     };
   }, [dragging, handlePointerMove, handlePointerUp]);
 
+  const isWin = lastRoll !== null && lastRoll >= minVal && lastRoll <= maxVal;
+
   return (
     <div className="w-full relative mt-10 touch-none select-none">
       
@@ -132,6 +134,28 @@ const DualRangeSlider = ({ vals, setVals }) => {
                 width: `${maxVal - minVal}%`,
               }}
             ></div>
+
+            {lastRoll !== null && (
+              <div 
+                className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-40 flex flex-col items-center pointer-events-none transition-all duration-300 ease-out animate-in zoom-in-50"
+                style={{ left: `${lastRoll}%` }}
+              >
+                {/* 3D Dice Block */}
+                <div 
+                  className={`
+                    px-2.5 py-1.5 rounded-md text-[13px] font-black shadow-xl border-x border-t border-b-[3px] 
+                    ${isWin 
+                      ? 'bg-[#00e701] border-b-[#00b801] border-t-[#33ff34] border-x-[#00d001] text-[#0f212e]' 
+                      : 'bg-[#e9113c] border-b-[#b80020] border-t-[#ff4d6a] border-x-[#d00018] text-white'
+                    }
+                  `}
+                >
+                  {lastRoll.toFixed(2)}
+                </div>
+                {/* Anchor Triangle */}
+                <div className={`w-0 h-0 mb-14 border-l-[6px] border-r-[6px] border-t-[6px] border-transparent ${isWin ? 'border-t-[#00b801]' : 'border-t-[#b80020]'}`}></div>
+              </div>
+            )}
 
             {/* Left Blue Thumb */}
             <div

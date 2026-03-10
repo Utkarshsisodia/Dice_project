@@ -26,7 +26,7 @@ const BottomControlPanel = ({ mode, setMode, twoVals, fourVals }) => {
   const multiplier = winChance > 0 ? (99 / winChance) : 0;
 
   return (
-    <div className="bg-[#1a2c38] px-5 py-4 rounded-lg flex items-end gap-5 shadow-lg border border-[#2f4553]/30">
+    <div className=" w-4xl bg-[#1a2c38] px-5 py-4 mt-30 rounded-lg flex items-end gap-5 shadow-lg border border-[#2f4553]/30">
       
       {/* Mode Switcher Buttons */}
       <div className="flex items-center bg-[#0f212e] rounded-[4px] p-1 h-[42px] gap-1 shadow-inner">

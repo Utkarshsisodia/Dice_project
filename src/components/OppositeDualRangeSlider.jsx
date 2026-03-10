@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 
-const OppositeDualRangeSlider = ({ vals, setVals }) => {
+const OppositeDualRangeSlider = ({ vals, setVals, lastRoll }) => {
   const minVal = vals[0];
   const maxVal = vals[1];
   
@@ -85,6 +85,7 @@ const OppositeDualRangeSlider = ({ vals, setVals }) => {
     };
   }, [dragging, handlePointerMove, handlePointerUp]);
 
+  const isWin = lastRoll !== null && (lastRoll <= minVal || lastRoll >= maxVal);
   return (
     <div className="w-full relative mt-10 touch-none select-none">
       <div className="relative w-full h-[44px] bg-[#2f4553] rounded-full shadow-sm">
@@ -116,6 +117,20 @@ const OppositeDualRangeSlider = ({ vals, setVals }) => {
                 width: `${maxVal - minVal}%`,
               }}
             ></div>
+
+            {lastRoll !== null && (
+              <div 
+                className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-40 flex flex-col items-center pointer-events-none transition-all duration-300 ease-out animate-in zoom-in-50"
+                style={{ left: `${lastRoll}%` }}
+              >
+                {/* Number Bubble */}
+                <div className={`px-2 py-1 rounded-[4px] text-[13px] font-black shadow-lg ${isWin ? 'bg-[#00e701] text-[#0f212e]' : 'bg-[#e9113c] text-white'}`}>
+                  {lastRoll.toFixed(2)}
+                </div>
+                {/* Little triangle pointing to the line */}
+                <div className={`w-0 mb-14 h-0 border-l-[5px] border-r-[5px] border-t-[5px] border-transparent ${isWin ? 'border-t-[#00e701]' : 'border-t-[#e9113c]'}`}></div>
+              </div>
+            )}
 
             {/* Left Thumb (Points Right) */}
             <div

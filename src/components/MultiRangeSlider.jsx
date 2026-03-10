@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 
-const MultiRangeSlider = ({ vals, setVals }) => {
+const MultiRangeSlider = ({ vals, setVals, lastRoll }) => {
   const trackRef = useRef(null);
   const audioCtxRef = useRef(null);
   const [dragging, setDragging] = useState(null);
@@ -80,6 +80,11 @@ const MultiRangeSlider = ({ vals, setVals }) => {
     };
   }, [dragging, handlePointerMove, handlePointerUp]);
 
+  const isWin = lastRoll !== null && (
+    (lastRoll >= vals[0] && lastRoll <= vals[1]) || 
+    (lastRoll >= vals[2] && lastRoll <= vals[3])
+  );
+
   return (
     <div className="w-full relative mt-10 touch-none select-none">
       <div className="relative w-full h-[44px] bg-[#2f4553] rounded-full shadow-sm">
@@ -120,6 +125,26 @@ const MultiRangeSlider = ({ vals, setVals }) => {
                 width: `${vals[3] - vals[2]}%`,
               }}
             ></div>
+
+            {lastRoll !== null && (
+              <div 
+                className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-40 flex flex-col items-center pointer-events-none transition-all duration-300 ease-out animate-in zoom-in-50"
+                style={{ left: `${lastRoll}%` }}
+              >
+                <div 
+                  className={`
+                    px-2.5 py-1.5 rounded-md text-[13px] font-black shadow-xl border-x border-t border-b-[3px] 
+                    ${isWin 
+                      ? 'bg-[#00e701] border-b-[#00b801] border-t-[#33ff34] border-x-[#00d001] text-[#0f212e]' 
+                      : 'bg-[#e9113c] border-b-[#b80020] border-t-[#ff4d6a] border-x-[#d00018] text-white'
+                    }
+                  `}
+                >
+                  {lastRoll.toFixed(2)}
+                </div>
+                <div className={`w-0 h-0 mb-14 border-l-[6px] border-r-[6px] border-t-[6px] border-transparent ${isWin ? 'border-t-[#00b801]' : 'border-t-[#b80020]'}`}></div>
+              </div>
+            )}
 
             {/* Map over the 4 values to render thumbs dynamically */}
             {vals.map((val, index) => {
