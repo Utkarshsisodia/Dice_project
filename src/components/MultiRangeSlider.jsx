@@ -1,6 +1,5 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import DiceMarker from './DiceMarker';
-import { TransitionGroup, CSSTransition } from 'react-transition-group';
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import DiceMarker from "./DiceMarker";
 
 const MultiRangeSlider = ({ vals, setVals, lastRoll }) => {
   const trackRef = useRef(null);
@@ -9,24 +8,26 @@ const MultiRangeSlider = ({ vals, setVals, lastRoll }) => {
   const [dragging, setDragging] = useState(null);
 
   const marks = [0, 25, 50, 75, 100];
-  const step = 1; 
+  const step = 1;
   const MIN_LIMIT = 2;
   const MAX_LIMIT = 100;
 
   const playTickSound = useCallback(() => {
     try {
       if (!audioCtxRef.current) {
-        audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+        audioCtxRef.current = new (
+          window.AudioContext || window.webkitAudioContext
+        )();
       }
       const ctx = audioCtxRef.current;
-      if (ctx.state === 'suspended') ctx.resume();
+      if (ctx.state === "suspended") ctx.resume();
 
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
 
-      osc.type = 'sine'; 
-      osc.frequency.setValueAtTime(3500, ctx.currentTime); 
-      osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.03); 
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(3500, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.03);
 
       gain.gain.setValueAtTime(0.05, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.03);
@@ -51,16 +52,19 @@ const MultiRangeSlider = ({ vals, setVals, lastRoll }) => {
 
       let newVals = [...vals];
       if (dragging === 0) newVals[0] = Math.min(percent, newVals[1]);
-      if (dragging === 1) newVals[1] = Math.max(newVals[0], Math.min(percent, newVals[2]));
-      if (dragging === 2) newVals[2] = Math.max(newVals[1], Math.min(percent, newVals[3]));
-      if (dragging === 3) newVals[3] = Math.max(newVals[2], Math.min(percent, MAX_LIMIT));
+      if (dragging === 1)
+        newVals[1] = Math.max(newVals[0], Math.min(percent, newVals[2]));
+      if (dragging === 2)
+        newVals[2] = Math.max(newVals[1], Math.min(percent, newVals[3]));
+      if (dragging === 3)
+        newVals[3] = Math.max(newVals[2], Math.min(percent, MAX_LIMIT));
 
       if (newVals[dragging] !== vals[dragging]) {
         setVals(newVals);
         playTickSound();
       }
     },
-    [dragging, vals, setVals, step, playTickSound]
+    [dragging, vals, setVals, step, playTickSound],
   );
 
   const handlePointerUp = useCallback(() => {
@@ -69,27 +73,25 @@ const MultiRangeSlider = ({ vals, setVals, lastRoll }) => {
 
   useEffect(() => {
     if (dragging !== null) {
-      window.addEventListener('pointermove', handlePointerMove);
-      window.addEventListener('pointerup', handlePointerUp);
+      window.addEventListener("pointermove", handlePointerMove);
+      window.addEventListener("pointerup", handlePointerUp);
     } else {
-      window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
     }
     return () => {
-      window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
     };
   }, [dragging, handlePointerMove, handlePointerUp]);
 
-  const isWin = lastRoll !== null && (
-    (lastRoll >= vals[0] && lastRoll <= vals[1]) || 
-    (lastRoll >= vals[2] && lastRoll <= vals[3])
-  );
+  const isWin =
+    lastRoll !== null &&
+    ((lastRoll >= vals[0] && lastRoll <= vals[1]) ||
+      (lastRoll >= vals[2] && lastRoll <= vals[3]));
 
   return (
     <div className="w-full relative mt-10 touch-none select-none">
-      
-      {/* --- ADDED: The CSS required for the fade transitions --- */}
       <style>{`
         .dice-fade-enter {
           opacity: 0;
@@ -109,12 +111,15 @@ const MultiRangeSlider = ({ vals, setVals, lastRoll }) => {
 
       <div className="relative w-full h-[44px] bg-[#2f4553] rounded-full shadow-sm">
         <div className="absolute inset-y-0 left-[22px] right-[22px]">
-          
           <div className="absolute top-[12px] bottom-[12px] left-[-6px] right-[-6px] bg-[#0f212e] rounded-full shadow-inner"></div>
 
           <div className="absolute top-0 left-0 w-full pointer-events-none">
             {marks.map((mark) => (
-              <div key={mark} className="absolute top-0 -translate-x-1/2" style={{ left: `${mark}%` }}>
+              <div
+                key={mark}
+                className="absolute top-0 -translate-x-1/2"
+                style={{ left: `${mark}%` }}
+              >
                 <span className="absolute bottom-[14px] left-1/2 -translate-x-1/2 text-white font-bold text-sm tracking-wide">
                   {mark}
                 </span>
@@ -123,8 +128,10 @@ const MultiRangeSlider = ({ vals, setVals, lastRoll }) => {
             ))}
           </div>
 
-          <div ref={trackRef} className="absolute top-[18px] left-0 right-0 h-[8px] rounded-full relative">
-            
+          <div
+            ref={trackRef}
+            className="absolute top-[18px] left-0 right-0 h-[8px] rounded-full relative"
+          >
             <div className="absolute inset-0 bg-[#e9113c] rounded-full shadow-sm"></div>
 
             <div
@@ -145,51 +152,61 @@ const MultiRangeSlider = ({ vals, setVals, lastRoll }) => {
 
             <TransitionGroup component={null}>
               {lastRoll !== null && (
-                <CSSTransition 
-                  key={lastRoll} 
-                  nodeRef={diceRef} 
-                  timeout={250} 
+                <CSSTransition
+                  key={lastRoll}
+                  nodeRef={diceRef}
+                  timeout={250}
                   classNames="dice-fade"
-                  unmountOnExit /* ADDED: This cleans up the DOM after fading out */
+                  unmountOnExit
                 >
-                  <div ref={diceRef} className="absolute inset-0 pointer-events-none z-40">
+                  <div
+                    ref={diceRef}
+                    className="absolute inset-0 pointer-events-none z-40"
+                  >
                     <DiceMarker lastRoll={lastRoll} isWin={isWin} />
                   </div>
                 </CSSTransition>
               )}
             </TransitionGroup>
 
-            {/* Map over the 4 values to render thumbs dynamically */}
             {vals.map((val, index) => {
               const isLeftPointer = index % 2 === 0;
 
               return (
                 <div
                   key={index}
-                  onPointerDown={(e) => { e.stopPropagation(); setDragging(index); }}
-                  className={`group absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-[34px] h-[34px] bg-[#5185ea] rounded-md flex justify-center items-center cursor-pointer z-20 shadow-lg transition duration-75 ${dragging === index ? 'brightness-110 scale-105' : 'hover:brightness-110'}`}
+                  onPointerDown={(e) => {
+                    e.stopPropagation();
+                    setDragging(index);
+                  }}
+                  className={`group absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-[34px] h-[34px] bg-[#5185ea] rounded-md flex justify-center items-center cursor-pointer z-20 shadow-lg transition duration-75 ${dragging === index ? "brightness-110 scale-105" : "hover:brightness-110"}`}
                   style={{ left: `${val}%` }}
                 >
-                  <div className={`absolute bottom-[85px] left-1/2 -translate-x-1/2 bg-[#364c59] px-3 py-1.5 rounded text-sm font-bold text-white shadow-xl pointer-events-none transition-all duration-200 ease-out z-30 ${dragging === index ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3 group-hover:opacity-100 group-hover:translate-y-0'}`}>
+                  <div
+                    className={`absolute bottom-[85px] left-1/2 -translate-x-1/2 bg-[#364c59] px-3 py-1.5 rounded text-sm font-bold text-white shadow-xl pointer-events-none transition-all duration-200 ease-out z-30 ${dragging === index ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3 group-hover:opacity-100 group-hover:translate-y-0"}`}
+                  >
                     {val.toFixed(2)}
                     <div className="absolute top-full left-1/2 -translate-x-1/2 border-l-[6px] border-r-[6px] border-t-[6px] border-transparent border-t-[#364c59]"></div>
                   </div>
 
-                  <svg 
-                    width="12" 
-                    height="12" 
-                    viewBox="0 0 24 24" 
-                    className={isLeftPointer ? "translate-x-[-1px]" : "translate-x-[1px]"}
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    className={
+                      isLeftPointer ? "translate-x-[-1px]" : "translate-x-[1px]"
+                    }
                   >
-                    <polygon 
-                      points={isLeftPointer ? "16,4 6,12 16,20" : "8,4 18,12 8,20"} 
-                      fill="white" 
+                    <polygon
+                      points={
+                        isLeftPointer ? "16,4 6,12 16,20" : "8,4 18,12 8,20"
+                      }
+                      fill="white"
                     />
                   </svg>
                 </div>
               );
             })}
-
           </div>
         </div>
       </div>
