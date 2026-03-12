@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import DiceMarker from "./DiceMarker";
+// FIXED: Added the missing import for the animation library!
+import { TransitionGroup, CSSTransition } from "react-transition-group";
 
 const MultiRangeSlider = ({ vals, setVals, lastRoll }) => {
   const trackRef = useRef(null);
