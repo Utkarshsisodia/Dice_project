@@ -5,8 +5,15 @@ import OppositeDualRangeSlider from "./components/OppositeDualRangeSlider";
 import MultiRangeSlider from "./components/MultiRangeSlider";
 import BottomControlPanel from "./components/BottomControlPanel";
 import PrimeDiceSidebar from "./components/PrimeDiceSidebar";
+import { useAuth } from "./context/AuthContext";
+import Auth from "./components/Auth";
 
 const App = () => {
+  const { user, loading } = useAuth();
+  
+  // NEW: State to control when the modal shows up
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
   const [mode, setMode] = useState(0);
   const [twoVals, setTwoVals] = useState([25, 75]);
   const [fourVals, setFourVals] = useState([12, 37, 62, 87]);
@@ -28,11 +35,15 @@ const App = () => {
   }, []);
 
   const handleBet = () => {
+    // NEW: GATEKEEPER! If no user is logged in, show modal and stop the bet.
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
+
     if (betClickAudioRef.current) {
-      betClickAudioRef.current.currentTime = 0;
-      betClickAudioRef.current
-        .play()
-        .catch((e) => console.log("Audio play blocked:", e));
+      betClickAudioRef.current.currentTime = 0; 
+      betClickAudioRef.current.play().catch(e => console.log("Audio play blocked:", e));
     }
     setLastRoll(null);
 
@@ -40,10 +51,8 @@ const App = () => {
       if (spinTickAudioRef.current) {
         setTimeout(() => {
           spinTickAudioRef.current.currentTime = 0;
-          spinTickAudioRef.current
-            .play()
-            .catch((e) => console.log("Audio play blocked:", e));
-        }, i * 70);
+          spinTickAudioRef.current.play().catch(e => console.log("Audio play blocked:", e));
+        }, i * 70); 
       }
     }
 
@@ -58,51 +67,40 @@ const App = () => {
       } else if (mode === 1) {
         isWin = roll <= twoVals[0] || roll >= twoVals[1];
       } else if (mode === 2) {
-        isWin =
-          (roll >= fourVals[0] && roll <= fourVals[1]) ||
-          (roll >= fourVals[2] && roll <= fourVals[3]);
+        isWin = (roll >= fourVals[0] && roll <= fourVals[1]) || (roll >= fourVals[2] && roll <= fourVals[3]);
       }
 
       if (isWin && winAudioRef.current) {
         winAudioRef.current.currentTime = 0;
-        winAudioRef.current
-          .play()
-          .catch((e) => console.log("Audio play blocked:", e));
+        winAudioRef.current.play().catch(e => console.log("Audio play blocked:", e));
       }
-    }, 350);
+    }, 350); 
   };
 
+  if (loading) {
+    return <div className="min-h-screen bg-[#0f212e] flex items-center justify-center text-[#b1bad3] font-bold">Connecting to server...</div>;
+  }
+
+  // Notice we removed the "if (!user) return <Auth />" here so the game ALWAYS renders
   return (
-    <div className="flex justify-center items-start min-h-screen bg-[#0f212e] p-4 sm:p-6 xl:p-10 w-full overflow-x-hidden box-border">
+    <div className="flex justify-center items-start min-h-screen bg-[#0f212e] p-4 sm:p-6 xl:p-10 w-full overflow-x-hidden box-border relative">
+      
+      {/* NEW: Render the modal conditionally over everything else */}
+      {showAuthModal && <Auth onClose={() => setShowAuthModal(false)} />}
+
       <div className="flex flex-col xl:flex-row items-stretch w-full max-w-[1250px] gap-6 xl:gap-8">
+        
         <div className="w-full xl:w-[320px] shrink-0 order-2 xl:order-1">
-          <PrimeDiceSidebar onBet={handleBet} />
+          <PrimeDiceSidebar onBet={handleBet}/>
         </div>
 
         <div className="flex-1 flex flex-col w-full order-1 xl:order-2">
+
           <div className="flex-1 flex flex-col justify-center items-center w-full px-4 sm:px-8 xl:px-12 min-h-[350px] xl:min-h-[500px]">
             <div className="w-full">
-              {mode === 0 && (
-                <DualRangeSlider
-                  vals={twoVals}
-                  setVals={setTwoVals}
-                  lastRoll={lastRoll}
-                />
-              )}
-              {mode === 1 && (
-                <OppositeDualRangeSlider
-                  vals={twoVals}
-                  setVals={setTwoVals}
-                  lastRoll={lastRoll}
-                />
-              )}
-              {mode === 2 && (
-                <MultiRangeSlider
-                  vals={fourVals}
-                  setVals={setFourVals}
-                  lastRoll={lastRoll}
-                />
-              )}
+              {mode === 0 && <DualRangeSlider vals={twoVals} setVals={setTwoVals} lastRoll={lastRoll}/>}
+              {mode === 1 && <OppositeDualRangeSlider vals={twoVals} setVals={setTwoVals} lastRoll={lastRoll}/>}
+              {mode === 2 && <MultiRangeSlider vals={fourVals} setVals={setFourVals} lastRoll={lastRoll}/>}
             </div>
           </div>
 
@@ -114,6 +112,7 @@ const App = () => {
               fourVals={fourVals}
             />
           </div>
+
         </div>
       </div>
     </div>
